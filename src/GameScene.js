@@ -82,7 +82,6 @@ class GameScene extends Phaser.Scene {
 
     showCards() {
         this.cards.forEach(card => {
-            console.log(card.position);
             card.depth = card.position.delay
             card.move({
                 x: card.position.x,
