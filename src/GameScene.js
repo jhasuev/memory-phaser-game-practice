@@ -16,6 +16,7 @@ class GameScene extends Phaser.Scene {
     }
 
     create() {
+        this.createTimer()
         this.createBackground()
         this.createText()
         this.createCards()
@@ -25,6 +26,7 @@ class GameScene extends Phaser.Scene {
     start(){
         this.openedCard = undefined
         this.openedCardCount = 0
+        this.timeout = config.timeout
         this.initCards()
     }
 
@@ -34,8 +36,32 @@ class GameScene extends Phaser.Scene {
         this.cards.forEach(card => {
             let position = positions.pop()
             card.close()
-            card.setPosition(position.x, position.y)
+            this.time.addEvent({
+                delay: 400,
+                callback: () => {
+                    card.setPosition(position.x, position.y)
+                },
+            })
         })
+    }
+
+    createTimer(){
+        this.time.addEvent({
+            delay: 1000,
+            loop: true,
+            callback: this.onTimerTick,
+            callbackScope: this,
+        })
+    }
+
+    onTimerTick(){
+        this.textTimer.setText(`Time: ${this.timeout}`)
+        
+        if (this.timeout <= 0) {
+            this.start()
+        } else {
+            this.timeout--
+        }
     }
 
     createBackground(){
@@ -43,11 +69,10 @@ class GameScene extends Phaser.Scene {
     }
 
     createText() {
-        this.textTimer = this.add.text(10, 330, "Timer: 30", {
+        this.textTimer = this.add.text(10, 330, "", {
             font: "36px CurseCasual",
             fill: "#fff",
         })
-        console.log(this.textTimer)
     }
 
     createCards(){
