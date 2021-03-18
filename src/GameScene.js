@@ -13,9 +13,30 @@ class GameScene extends Phaser.Scene {
         for (let value of config.cards) {
             this.load.image(`card${value}`, `assets/img/card${value}.png`)
         }
+
+        this.load.audio("card", "assets/sounds/card.mp3")
+        this.load.audio("complete", "assets/sounds/complete.mp3")
+        this.load.audio("success", "assets/sounds/success.mp3")
+        this.load.audio("theme", "assets/sounds/theme.mp3")
+        this.load.audio("timeout", "assets/sounds/timeout.mp3")
+    }
+
+    createSounds() {
+        this.sounds = {
+            "card": this.sound.add("card"),
+            "complete": this.sound.add("complete"),
+            "success": this.sound.add("success"),
+            "theme": this.sound.add("theme"),
+            "timeout": this.sound.add("timeout"),
+        }
+
+        this.sounds.theme.play({
+            volume: .1
+        })
     }
 
     create() {
+        this.createSounds()
         this.createTimer()
         this.createBackground()
         this.createText()
@@ -58,6 +79,7 @@ class GameScene extends Phaser.Scene {
         this.textTimer.setText(`Time: ${this.timeout}`)
         
         if (this.timeout <= 0) {
+            this.sounds.timeout.play()
             this.start()
         } else {
             this.timeout--
@@ -96,19 +118,23 @@ class GameScene extends Phaser.Scene {
                 // одинаковые карты
                 this.openedCard = null
                 this.openedCardCount += 1
+                this.sounds.success.play()
             } else {
                 // неодинаковые карты
                 this.openedCard.close()
                 this.openedCard = card
+                this.sounds.card.play()
             }
         } else {
             // нет открытой карты
             this.openedCard = card
+            this.sounds.card.play()
         }
 
         card.open()
 
         if (this.openedCardCount === this.cards.length / 2) {
+            this.sounds.complete.play()
             this.start()
         }
     }
