@@ -5,6 +5,7 @@ export default {
     type: Phaser.AUTO,
     row: 2,
     col: 5,
+    cards: [1, 2, 3, 4, 5],
     width: 1280,
     height: 720,
 }
