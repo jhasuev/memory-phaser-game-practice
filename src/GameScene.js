@@ -18,6 +18,7 @@ class GameScene extends Phaser.Scene {
     create() {
         this.createBackground()
         this.createCards()
+        this.openedCard = undefined
     }
 
     createBackground(){
@@ -39,6 +40,22 @@ class GameScene extends Phaser.Scene {
     }
 
     onCardClicked(pointer, card){
+        if (card.opened) return;
+
+        if (this.openedCard) {
+            // есть открытая карта
+            if (this.openedCard.value === card.value) {
+                // одинаковые карты
+                this.openedCard = null
+            } else {
+                // неодинаковые карты
+                this.openedCard.close()
+                this.openedCard = card
+            }
+        } else {
+            // нет открытой карты
+            this.openedCard = card
+        }
         card.open()
     }
 
