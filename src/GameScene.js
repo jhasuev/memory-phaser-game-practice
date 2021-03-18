@@ -93,8 +93,8 @@ class GameScene extends Phaser.Scene {
         for (let rowIndex = 0; rowIndex < config.row; rowIndex++) {
             for (let colIndex = 0; colIndex < config.col; colIndex++) {
                 positions.push({
-                    x: (width + offset) * colIndex + leftOffset,
-                    y: (height + offset) * rowIndex + topOffset
+                    x: (width + offset) * colIndex + leftOffset + width / 2,
+                    y: (height + offset) * rowIndex + topOffset + height / 2
                 })
             }
         }
