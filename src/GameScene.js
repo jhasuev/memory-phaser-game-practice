@@ -17,6 +17,7 @@ class GameScene extends Phaser.Scene {
 
     create() {
         this.createBackground()
+        this.createText()
         this.createCards()
         this.start()
     }
@@ -39,6 +40,14 @@ class GameScene extends Phaser.Scene {
 
     createBackground(){
         this.add.sprite(0, 0, "bg").setOrigin(0)
+    }
+
+    createText() {
+        this.textTimer = this.add.text(10, 330, "Timer: 30", {
+            font: "36px CurseCasual",
+            fill: "#fff",
+        })
+        console.log(this.textTimer)
     }
 
     createCards(){
