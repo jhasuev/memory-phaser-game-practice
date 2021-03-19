@@ -10,9 +10,11 @@ class GameScene extends Phaser.Scene {
         this.load.image("bg", "assets/img/background.png")
         this.load.image("card", "assets/img/card.png")
 
-        for (let value of config.cards) {
-            this.load.image(`card${value}`, `assets/img/card${value}.png`)
-        }
+        this.load.image("card1", "assets/img/card1.png")
+        this.load.image("card2", "assets/img/card2.png")
+        this.load.image("card3", "assets/img/card3.png")
+        this.load.image("card4", "assets/img/card4.png")
+        this.load.image("card5", "assets/img/card5.png")
 
         this.load.audio("card", "assets/sounds/card.mp3")
         this.load.audio("complete", "assets/sounds/complete.mp3")
@@ -36,19 +38,49 @@ class GameScene extends Phaser.Scene {
     }
 
     create() {
+        this.level = 0
+        this.scores = 0
+        this.scoresWave = 0
+
         this.createSounds()
         this.createTimer()
         this.createBackground()
         this.createText()
-        this.createCards()
         this.start()
     }
 
+    addScores() {
+        this.scores += config.scores[this.scoresWave]
+        this.scoresWave += 1
+        this.scoresWave = Math.min(this.scoresWave, config.scores.length - 1)
+    }
+
+    getCurrentLevel() {
+        return config.levels[this.level]
+    }
+
+    getLevelCards() {
+        return this.getCurrentLevel().cards
+    }
+
+    getLevelRow() {
+        return this.getCurrentLevel().row
+    }
+
+    getLevelCol() {
+        return this.getCurrentLevel().col
+    }
+
+    getLevelTimeout() {
+        return this.getCurrentLevel().timeout
+    }
+
     start() {
+        this.createCards()
         this.initCardsPositions()
         this.openedCard = undefined
         this.openedCardCount = 0
-        this.timeout = config.timeout
+        this.timeout = this.getLevelTimeout()
         this.timer.paused = false
         this.initCards()
         this.showCards()
@@ -100,8 +132,19 @@ class GameScene extends Phaser.Scene {
         })
     }
 
+    updateInfo() {
+        let info = [
+            `Time: ${this.timeout}`,
+            `Level: ${this.level + 1}`,
+            `Scores: ${this.scores}`,
+        ]
+
+
+        this.infoText.setText(info.join("\n"))
+    }
+
     onTimerTick(){
-        this.textTimer.setText(`Time: ${this.timeout}`)
+        this.updateInfo()
         
         if (this.timeout <= 0) {
             this.timer.paused = true
@@ -117,16 +160,18 @@ class GameScene extends Phaser.Scene {
     }
 
     createText() {
-        this.textTimer = this.add.text(10, 330, "", {
+        this.infoText = this.add.text(10, 297, "", {
             font: "36px CurseCasual",
             fill: "#fff",
         })
+
+        this.infoText.depth = 99999
     }
 
     createCards(){
         this.cards = []
 
-        for (let value of config.cards) {
+        for (let value of this.getLevelCards()) {
             for (let i = 0; i < 2; i++) {
                 this.cards.push(new Card(this, value))
             }
@@ -145,11 +190,14 @@ class GameScene extends Phaser.Scene {
                 this.openedCard = null
                 this.openedCardCount += 1
                 this.sounds.success.play()
+                this.addScores()
+                this.updateInfo()
             } else {
                 // неодинаковые карты
                 this.openedCard.close()
                 this.openedCard = card
                 this.sounds.card.play()
+                this.scoresWave = 0
             }
         } else {
             // нет открытой карты
@@ -159,10 +207,17 @@ class GameScene extends Phaser.Scene {
 
         card.open(() => {
             if (this.openedCardCount === this.cards.length / 2) {
-                this.sounds.complete.play()
-                this.restart()
+                this.onComplete()
             }
         })
+    }
+
+    onComplete() {
+        this.level += 1
+        this.level = Math.min(this.level, config.levels.length - 1)
+
+        this.sounds.complete.play()
+        this.restart()
     }
 
     initCardsPositions() {
@@ -170,14 +225,16 @@ class GameScene extends Phaser.Scene {
 
         const {width, height} = this.textures.get("card").getSourceImage()
         const offset = 10
-        const cardsWidth = (width + offset) * config.col - offset
-        const cardsHeight = (height + offset) * config.row - offset
+        const row = this.getLevelRow()
+        const col = this.getLevelCol()
+        const cardsWidth = (width + offset) * col - offset
+        const cardsHeight = (height + offset) * row - offset
         const leftOffset = (this.sys.game.config.width - cardsWidth) / 2
         const topOffset = (this.sys.game.config.height - cardsHeight) / 2
         
         let id = 0
-        for (let rowIndex = 0; rowIndex < config.row; rowIndex++) {
-            for (let colIndex = 0; colIndex < config.col; colIndex++) {
+        for (let rowIndex = 0; rowIndex < row; rowIndex++) {
+            for (let colIndex = 0; colIndex < col; colIndex++) {
                 positions.push({
                     delay: ++id * 100,
                     x: (width + offset) * colIndex + leftOffset + width / 2,
