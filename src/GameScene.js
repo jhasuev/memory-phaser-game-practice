@@ -51,8 +51,11 @@ class GameScene extends Phaser.Scene {
 
     addScores() {
         this.scores += config.scores[this.scoresWave]
-        this.scoresWave += 1
-        this.scoresWave = Math.min(this.scoresWave, config.scores.length - 1)
+        this.scoresWave = Math.min(++this.scoresWave, config.scores.length - 1)
+    }
+
+    downScoresWave() {
+        this.scoresWave = Math.max(--this.scoresWave, 0)
     }
 
     getCurrentLevel() {
@@ -81,16 +84,21 @@ class GameScene extends Phaser.Scene {
         this.openedCard = undefined
         this.openedCardCount = 0
         this.timeout = this.getLevelTimeout()
-        this.timer.paused = false
         this.initCards()
         this.showCards()
+        this.timer.paused = false
     }
 
     restart() {
+        if (this.restarting) return;
+
+        this.restarting = true
+        this.timer.paused = true
         let count = 0
         const onCardMoveComplete = () => {
             if (++count >= this.cards.length) {
                 this.start()
+                this.restarting = false
             }
         }
 
@@ -147,9 +155,9 @@ class GameScene extends Phaser.Scene {
         this.updateInfo()
         
         if (this.timeout <= 0) {
-            this.timer.paused = true
             this.sounds.timeout.play()
             this.restart()
+            this.downScoresWave()
         } else {
             this.timeout--
         }
@@ -197,7 +205,7 @@ class GameScene extends Phaser.Scene {
                 this.openedCard.close()
                 this.openedCard = card
                 this.sounds.card.play()
-                this.scoresWave = 0
+                this.downScoresWave()
             }
         } else {
             // нет открытой карты
